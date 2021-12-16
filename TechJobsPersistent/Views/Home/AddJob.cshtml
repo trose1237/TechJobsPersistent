@@ -23,9 +23,9 @@
             }
         else
             {
-                @foreach (var skill in Model.Skills)
+                @foreach (var skill in @Model.Skills)
                 {
-                    <input type="checkbox" id="selectedSkills" value="@skill.Id" />
+                    <input type="checkbox" id="selectedSkills" name="selectedSkills" value="@skill.Id" />
                     <label>@skill.Name</label>
                 }
             }
