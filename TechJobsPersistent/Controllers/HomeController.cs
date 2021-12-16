@@ -32,12 +32,53 @@ namespace TechJobsPersistent.Controllers
         [HttpGet("/Add")]
         public IActionResult AddJob()
         {
-            return View();
+            List<Employer> employers = context.Employers.ToList();
+            List<Skill> skills = context.Skills.ToList();
+            AddJobViewModel addJobViewModel = new AddJobViewModel(employers, skills);
+            return View(addJobViewModel);
         }
 
-        public IActionResult ProcessAddJobForm()
+        public IActionResult ProcessAddJobForm(AddJobViewModel addJobViewModel, string[] selectedSkills)
         {
-            return View();
+            if (ModelState.IsValid)
+            {
+
+                Job newJob = new Job
+                {
+                    Name = addJobViewModel.Name,
+                    Employer = context.Employers.Find(addJobViewModel.EmployerId),
+                    EmployerId = addJobViewModel.EmployerId,
+                };
+
+                foreach (var item in selectedSkills)
+                {
+                    int skillId = int.Parse(item);
+                    int jobId = newJob.Id;
+
+                    List<JobSkill> existingTableItems = context.JobSkills
+                         .Where(js => js.JobId == jobId)
+                        .Where(js => js.SkillId == skillId)
+                        .ToList();
+
+                    if (existingTableItems.Count == 0)
+                    {
+                        JobSkill jobSkill = new JobSkill
+                        {
+                            JobId = jobId,
+                            Job = newJob,
+                            SkillId = skillId,
+                            Skill = context.Skills.Find(skillId)
+                        };
+                        context.JobSkills.Add(jobSkill);
+                    }
+                }
+
+                context.Jobs.Add(newJob);
+                context.SaveChanges();
+
+                return Redirect("Index");
+            }
+            return View(addJobViewModel);
         }
 
         public IActionResult Detail(int id)
